@@ -1,0 +1,26 @@
+services:
+  api:
+    build: .
+    container_name: auth-api
+    restart: unless-stopped
+    environment:
+      - PORT=3000
+      - JWT_SECRET=please-change-this-secret
+      - JWT_EXPIRES_IN=1h
+    ports:
+      - "${API_PORT:-3000}:3000"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  frontend:
+    build: ./frontend
+    container_name: auth-frontend
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "8080:80"
